@@ -1,46 +1,59 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+import tensorflow as tf
 
-from constants import PATH_DATA
+import os
+import sys
+
+from .constants import PATH_DATA
+
+
+
+def restart_kernel():
+    os.execl(sys.executable, sys.executable, *sys.argv)
+
 
 
 def read_dataset(dataset_name):
-    datasets_dict = {}
-    cur_root_dir = PATH_DATA
-    root_dir_dataset = cur_root_dir + '/' + dataset_name + '/'
+    try:
+        datasets_dict = {}
+        cur_root_dir = PATH_DATA
+        root_dir_dataset = cur_root_dir + '/' + dataset_name + '/'
 
-    df_train = pd.read_csv(root_dir_dataset + dataset_name +
-                           '_TRAIN.tsv', sep='\t', header=None)
-    df_test = pd.read_csv(root_dir_dataset + dataset_name +
-                          '_TEST.tsv', sep='\t', header=None)
+        df_train = pd.read_csv(root_dir_dataset + dataset_name +
+                            '_TRAIN.tsv', sep='\t', header=None)
+        df_test = pd.read_csv(root_dir_dataset + dataset_name +
+                            '_TEST.tsv', sep='\t', header=None)
 
-    y_train = df_train.values[:, 0]
-    y_test = df_test.values[:, 0]
+        y_train = df_train.values[:, 0]
+        y_test = df_test.values[:, 0]
 
-    x_train = df_train.drop(columns=[0])
-    x_test = df_test.drop(columns=[0])
+        x_train = df_train.drop(columns=[0])
+        x_test = df_test.drop(columns=[0])
 
-    x_train.columns = range(x_train.shape[1])
-    x_test.columns = range(x_test.shape[1])
+        x_train.columns = range(x_train.shape[1])
+        x_test.columns = range(x_test.shape[1])
 
-    x_train = x_train.values
-    x_test = x_test.values
+        x_train = x_train.values
+        x_test = x_test.values
 
-    # znorm
-    std_ = x_train.std(axis=1, keepdims=True)
-    std_[std_ == 0] = 1.0
-    x_train = (x_train - x_train.mean(axis=1, keepdims=True)) / std_
+        # znorm
+        std_ = x_train.std(axis=1, keepdims=True)
+        std_[std_ == 0] = 1.0
+        x_train = (x_train - x_train.mean(axis=1, keepdims=True)) / std_
 
-    std_ = x_test.std(axis=1, keepdims=True)
-    std_[std_ == 0] = 1.0
-    x_test = (x_test - x_test.mean(axis=1, keepdims=True)) / std_
+        std_ = x_test.std(axis=1, keepdims=True)
+        std_[std_ == 0] = 1.0
+        x_test = (x_test - x_test.mean(axis=1, keepdims=True)) / std_
 
-    datasets_dict[dataset_name] = (x_train.copy(), y_train.copy(), x_test.copy(),
-                                   y_test.copy())
+        datasets_dict[dataset_name] = (x_train.copy(), y_train.copy(), x_test.copy(),
+                                    y_test.copy())
 
-    return datasets_dict
-
+        return datasets_dict[dataset_name]
+    except:
+        print("Error fetching data")
+        return [None]
 
 def plot(dataset, labels):
     try:
@@ -166,3 +179,25 @@ class Log:
 
     def info(self,input):
         print(f"{input}")
+
+
+def reset_gpu():
+    # Clear GPU memory
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            tf.keras.backend.clear_session()  # Clear TensorFlow session
+            print("GPU memory has been successfully cleared.")
+        except RuntimeError as e:
+            print(e)
+    else:
+        print("No GPU available. Nothing to clear.")
+    
+    # Reset cuDNN, cuFFT, and cuBLAS factories
+    try:
+        tf.keras.backend.clear_session()  # Clear TensorFlow session again
+        print("cuDNN, cuFFT, and cuBLAS factories have been reset.")
+    except Exception as e:
+        print(e)
