@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Dense, Activation, Input
 
 
 def MultiLayerPerceptron(input_size,num_labels, hidden_units = 500):
-    # try:
+    try:
         inputs = Input(shape=(input_size,))
 
         # Hidden layers
@@ -24,6 +24,6 @@ def MultiLayerPerceptron(input_size,num_labels, hidden_units = 500):
         model = Model(inputs=inputs, outputs=outputs)
 
         return model
-    # except:
-    #     print("error")
-    #     return None
+    except:
+        print("error")
+        return None

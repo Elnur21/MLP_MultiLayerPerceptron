@@ -13,7 +13,33 @@ from .constants import PATH_DATA
 def restart_kernel():
     os.execl(sys.executable, sys.executable, *sys.argv)
 
+def reset_gpu():
+    # Clear GPU memory
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            tf.keras.backend.clear_session()  # Clear TensorFlow session
+            print("GPU memory has been successfully cleared.")
+        except RuntimeError as e:
+            print(e)
+    else:
+        print("No GPU available. Nothing to clear.")
+    
+    # Reset cuDNN, cuFFT, and cuBLAS factories
+    try:
+        tf.keras.backend.clear_session()  # Clear TensorFlow session again
+        print("cuDNN, cuFFT, and cuBLAS factories have been reset.")
+    except Exception as e:
+        print(e)
 
+def clear_gpu_memory():
+    physical_devices = tf.config.experimental.list_physical_devices('GPU')
+    if physical_devices:
+        for device in physical_devices:
+            tf.config.experimental.set_memory_growth(device, True)
+    tf.keras.backend.clear_session()
 
 def read_dataset(dataset_name):
     try:
@@ -140,7 +166,7 @@ def plot_1v1_perf(res_df,column1,column2, acc_base=100):
     num_losses = res_df[res_df[column2] < res_df[column1]].shape[0]
 
     # Plot the scatter points
-    plt.scatter(x_above, y_above, label='LogisticRegression Wins - ' + str(num_wins), color='red')
+    plt.scatter(x_above, y_above, label=f'{column2} Wins - ' + str(num_wins), color='red')
     plt.scatter(x_same, y_same, label='Equal - ' + str(num_ties), color='orange')
     plt.scatter(x_below, y_below, label=f'{column1} Wins - ' + str(num_losses), color='green')
 
@@ -150,15 +176,46 @@ def plot_1v1_perf(res_df,column1,column2, acc_base=100):
 
     # Add labels and title
     plt.xlabel(f'{column1} perf.')
-    plt.ylabel('LogisticRegression perf.')
-    plt.title(f'1 x 1 Performance Comparison - {column1} and "LogisticRegression" ')
+    plt.ylabel(f'{column2} perf.')
+    plt.title(f'1 x 1 Performance Comparison - {column1} and {column2}')
 
     # Add a legend
     plt.legend()
-    plt.savefig("compare_results/"+ column1 + '_runs_10.png')
+    plt.savefig("compare/"+ column1 + '_run.png')
     plt.close()
     # Display the plot
     # plt.show()
+
+def plot_loss(model_history, parameter, dataset):
+     # Extracting loss values for training and validation from the history dictionary
+    history_dict = model_history.history
+
+    # Extracting loss values for training and validation
+    loss_train_epochs = history_dict[parameter]
+    loss_val_epochs = history_dict[f'val_{parameter}']
+
+    # Plotting the curves
+    plt.figure()
+
+    # Plotting training loss in blue
+    plt.plot(loss_train_epochs, color='blue', label=f'train_{parameter}')
+
+    # Plotting validation loss in red
+    plt.plot(loss_val_epochs, color='red', label=f'val_{parameter}')
+
+    # Adding labels and legend
+    plt.xlabel('epoch')  # X-axis label
+    plt.ylabel(parameter)   # Y-axis label
+    plt.legend()         # Display legend
+
+    # Displaying the plot
+    # plt.show()
+
+    # save the plot
+    plt.savefig("compare/"+dataset+ parameter + '.png')
+
+    # Closing the plot to avoid overlapping with future plots
+    plt.close()
 
 def label_encoder(y):
     unique_labels = np.unique(y)
@@ -179,25 +236,3 @@ class Log:
 
     def info(self,input):
         print(f"{input}")
-
-
-def reset_gpu():
-    # Clear GPU memory
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
-        try:
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            tf.keras.backend.clear_session()  # Clear TensorFlow session
-            print("GPU memory has been successfully cleared.")
-        except RuntimeError as e:
-            print(e)
-    else:
-        print("No GPU available. Nothing to clear.")
-    
-    # Reset cuDNN, cuFFT, and cuBLAS factories
-    try:
-        tf.keras.backend.clear_session()  # Clear TensorFlow session again
-        print("cuDNN, cuFFT, and cuBLAS factories have been reset.")
-    except Exception as e:
-        print(e)
