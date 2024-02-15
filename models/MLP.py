@@ -10,9 +10,11 @@ def MultiLayerPerceptron(input_size,num_labels, hidden_units = 500):
         # Hidden layers
         x = Dense(hidden_units)(inputs)
         x = Activation('relu')(x)
+        x = Dropout(0.5)(x)
 
         x = Dense(hidden_units)(x)
         x = Activation('relu')(x)
+        x = Dropout(0.5)(x)
 
         x = Dense(hidden_units)(x)
         x = Activation('relu')(x)
