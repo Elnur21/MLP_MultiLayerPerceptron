@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
+from tensorflow.keras.layers import Activation, Input, Conv2D, BatchNormalization
 
 import os
 import sys
@@ -229,6 +230,19 @@ def label_encoder(y):
     label_map = {label: idx for idx, label in enumerate(unique_labels)}
     encoded_labels = np.array([label_map[label] for label in y])
     return encoded_labels
+
+def residual_block(inputs, filters, kernel_size):
+    x = Conv2D(filters=filters, kernel_size=kernel_size, strides=1)(inputs)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(filters=filters, kernel_size=kernel_size, strides=1)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(filters=filters, kernel_size=kernel_size, strides=1)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
+    return x
 
 
 class Log:
