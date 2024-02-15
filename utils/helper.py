@@ -186,33 +186,40 @@ def plot_1v1_perf(res_df,column1,column2, acc_base=100):
     # Display the plot
     # plt.show()
 
-def plot_loss(model_history, parameter, dataset):
+def plot_loss(model_history, dataset):
      # Extracting loss values for training and validation from the history dictionary
-    history_dict = model_history.history
+    history_dict = model_history
 
     # Extracting loss values for training and validation
-    loss_train_epochs = history_dict[parameter]
-    loss_val_epochs = history_dict[f'val_{parameter}']
+    loss_train_epochs = history_dict["loss"]
+    loss_val_epochs = history_dict[f'val_loss']
 
-    # Plotting the curves
+    accuracy_train_epochs = history_dict["accuracy"]
+    accuracy_val_epochs = history_dict[f'val_accuracy']
+
     plt.figure()
+    fig, ax = plt.subplots(1, 2, figsize=(20, 8))
 
-    # Plotting training loss in blue
-    plt.plot(loss_train_epochs, color='blue', label=f'train_{parameter}')
+    ax[0].plot(loss_train_epochs, color='blue', label=f'train_loss')
+    ax[0].plot(loss_val_epochs, color='red', label=f'val_loss')
+    ax[0].set_title('Loss over Epochs')
+    ax[0].set_xlabel('Epoch')
+    ax[0].set_ylabel('Loss')
 
-    # Plotting validation loss in red
-    plt.plot(loss_val_epochs, color='red', label=f'val_{parameter}')
+    ax[1].plot(accuracy_train_epochs, color='blue', label=f'train_accuracy')
+    ax[1].plot(accuracy_val_epochs, color='red', label=f'val_accuracy')
+    ax[1].set_title("Accuracy Over Epochs")
+    ax[1].set_xlabel('Epoch')
+    ax[1].set_ylabel('Accuracy')
 
-    # Adding labels and legend
-    plt.xlabel('epoch')  # X-axis label
-    plt.ylabel(parameter)   # Y-axis label
-    plt.legend()         # Display legend
+    fig.suptitle(dataset, fontsize=20)
+    plt.legend() # Display legend
 
     # Displaying the plot
     # plt.show()
 
     # save the plot
-    plt.savefig("compare/"+dataset+ parameter + '.png')
+    plt.savefig("compare/" + dataset + '.png')
 
     # Closing the plot to avoid overlapping with future plots
     plt.close()

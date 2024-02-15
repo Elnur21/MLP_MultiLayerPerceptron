@@ -5,6 +5,8 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import CategoricalCrossentropy
 
+import gc
+
 
 from utils.helper import *
 from utils.constants import *
@@ -13,10 +15,12 @@ from models.MLP import MultiLayerPerceptron
 
 
 results=[]
+histories=[]
 
 try:
-    with tf.device("/device:GPU:0"):
-        for dataset in  UNIVARIATE_DATASET_NAMES_2018:
+    for dataset in  UNIVARIATE_DATASET_NAMES_2018:
+        with tf.device("/device:GPU:0"):
+            dataset="ArrowHead"
             # Load data
             df = read_dataset(dataset)
 
@@ -34,12 +38,16 @@ try:
             # Evaluate the model
             loss, accuracy = model.evaluate(df[2], y_test)
 
-            results.append(dataset, loss, accuracy)
+            results.append([dataset, loss, accuracy])
+            histories.append(history.history)
+        clear_gpu_memory()
+        gc.collect()
             
-    pd.DataFrame(results, columns=["Dataset","Test loss", "Test accuracy"]).to_csv("result", index=False)
-    reset_gpu()
+    pd.DataFrame(results, columns=["Dataset","Test loss", "Test accuracy"]).to_csv("result.csv", index=False)
 
-except:
-    # reset_gpu()
-    # restart_kernel()
-    print("olmur")
+except Exception as e:
+    print("An error occurred:", e)
+
+
+for i in range(len(histories)):
+    plot_loss(histories[i], UNIVARIATE_DATASET_NAMES_2018[i])

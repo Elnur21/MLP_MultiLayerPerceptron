@@ -1,5 +1,5 @@
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Activation, Input
+from tensorflow.keras.layers import Dense, Activation, Input, Dropout
 
 
 
@@ -16,6 +16,7 @@ def MultiLayerPerceptron(input_size,num_labels, hidden_units = 500):
 
         x = Dense(hidden_units)(x)
         x = Activation('relu')(x)
+        x = Dropout(0.5)(x)
 
         # Output layer
         outputs = Dense(num_labels, activation='softmax')(x)
