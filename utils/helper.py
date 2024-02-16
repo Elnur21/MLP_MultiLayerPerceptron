@@ -2,13 +2,12 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
-from tensorflow.keras.layers import Activation, Input, Conv2D, BatchNormalization
+from tensorflow.keras.layers import Activation, Conv1D, BatchNormalization
 
 import os
 import sys
 
 from .constants import PATH_DATA
-
 
 
 def restart_kernel():
@@ -115,7 +114,6 @@ def plot(dataset, labels):
         plt.show()
     except:
         print("Error")
-
 
 def plot_pie_chart(original_labels, predicted_labels, title):
     original_counts = pd.DataFrame(original_labels).value_counts()
@@ -231,19 +229,20 @@ def label_encoder(y):
     encoded_labels = np.array([label_map[label] for label in y])
     return encoded_labels
 
-def residual_block(inputs, filters, kernel_size):
-    x = Conv2D(filters=filters, kernel_size=kernel_size, strides=1)(inputs)
+def residual_block(inputs, filters):
+    x = Conv1D(filters=filters[0], kernel_size=8, strides=1, padding='same')(inputs)
+    x = BatchNormalization()(x)
+
+    x = Activation('relu')(x)
+    x = Conv1D(filters=filters[1], kernel_size=5, strides=1, padding='same')(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
-    x = Conv2D(filters=filters, kernel_size=kernel_size, strides=1)(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Conv2D(filters=filters, kernel_size=kernel_size, strides=1)(x)
+
+    x = Conv1D(filters=filters[2], kernel_size=3, strides=1, padding='same')(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
     return x
-
 
 class Log:
     def __init__(self) -> None:
