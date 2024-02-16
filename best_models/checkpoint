@@ -1,2 +1,2 @@
-model_checkpoint_path: "best_model_distiller_Yoga.tf"
-all_model_checkpoint_paths: "best_model_distiller_Yoga.tf"
+model_checkpoint_path: "best_model_distiller_InlineSkate.tf"
+all_model_checkpoint_paths: "best_model_distiller_InlineSkate.tf"
